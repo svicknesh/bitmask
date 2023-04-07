@@ -2,19 +2,21 @@ package bitmask
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"testing"
 )
 
-func TestBitmask(T *testing.T) {
+const (
+	SrvCapRSA Bit = 1 << iota // fastest way to initialize capabilities
+	SrvCapEC
+	SrvCapED
+	SrvCapReserved1
+	SrvCapReserved2
+	SrvCapCrvPub
+)
 
-	const (
-		SrvCapRSA Bit = 1 << iota // fastest way to initialize capabilities
-		SrvCapEC
-		SrvCapED
-		SrvCapReserved1
-		SrvCapReserved2
-		SrvCapCrvPub
-	)
+func TestBitmask(T *testing.T) {
 
 	b := New(3)
 	fmt.Println("new\t", b)
@@ -36,5 +38,17 @@ func TestBitmask(T *testing.T) {
 
 	b.Clear()
 	fmt.Println("clear\t", b)
+
+}
+
+func TestBitmaskString(T *testing.T) {
+	b, err := NewFromStr("100111")
+	if nil != err {
+		log.Println(err)
+		os.Exit(1)
+	}
+	fmt.Println("new\t", b)
+
+	fmt.Println("has RSA\t", b.Has(SrvCapRSA))
 
 }

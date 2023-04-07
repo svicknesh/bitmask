@@ -3,6 +3,7 @@ package bitmask
 import (
 	"fmt"
 	"math"
+	"strconv"
 )
 
 // Bit - new type for bitmask
@@ -23,6 +24,20 @@ func New(size int) (b *Bitmask) {
 	b.largest = Bit(math.Exp2(float64(size)))
 	//b.bv = 1 << (size - 1)
 
+	return
+}
+
+// NewFromStr - creates a new instance of bitmask from a bit string
+func NewFromStr(bitstr string) (b *Bitmask, err error) {
+	b = new(Bitmask)
+	b.size = len(bitstr)
+
+	bitvalue, err := strconv.ParseUint(bitstr, 2, 64)
+	if nil != err {
+		return nil, fmt.Errorf("newfromstr: error parsing bit string -> %w", err)
+	}
+
+	b.bv = Bit(bitvalue)
 	return
 }
 

@@ -4,6 +4,8 @@ Golang helper library for bitmask operations.
 
 ## Usage
 
+### Creating new bitmask instance
+
 ```go
 const (
     SrvCapRSA Bit = 1 << iota // fastest way to initialize capabilities
@@ -34,4 +36,17 @@ fmt.Println("setall\t", b)
 
 b.Clear()
 fmt.Println("clear\t", b)
+```
+
+### Decoding from bit string
+
+```go
+b, err := NewFromStr("100111")
+if nil != err {
+    log.Println(err)
+    os.Exit(1)
+}
+fmt.Println("new\t", b)
+
+fmt.Println("has RSA\t", b.Has(SrvCapRSA))
 ```
