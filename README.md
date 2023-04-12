@@ -49,4 +49,6 @@ if nil != err {
 fmt.Println("new\t", b)
 
 fmt.Println("has RSA\t", b.Has(SrvCapRSA))
+
+fmt.Println(b.Uint64())
 ```

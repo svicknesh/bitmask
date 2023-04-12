@@ -110,6 +110,11 @@ func (b *Bitmask) String() (bitStr string) {
 	return fmt.Sprintf("%0*b", b.size, b.bv)
 }
 
+// Uint64 - returns the interger value of the bit
+func (b *Bitmask) Uint64() (i uint64) {
+	return uint64(b.bv)
+}
+
 // MarshalJSON - returnsa JSON marshal bytes for the bitmask
 func (b Bitmask) MarshalJSON() ([]byte, error) {
 	// do not change this to `[]byte(b.String())`, calling json.Marshal will return it as a proper string

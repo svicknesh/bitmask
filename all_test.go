@@ -52,6 +52,8 @@ func TestBitmaskString(T *testing.T) {
 
 	fmt.Println("has RSA\t", b.Has(SrvCapRSA))
 
+	fmt.Println(b.Uint64())
+
 }
 
 func TestBitmaskJSON(T *testing.T) {
