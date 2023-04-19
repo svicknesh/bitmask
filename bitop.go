@@ -2,6 +2,7 @@ package bitmask
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"strconv"
@@ -31,6 +32,11 @@ func New(size int) (b *Bitmask) {
 
 // NewFromStr - creates a new instance of bitmask from a bit string
 func NewFromStr(bitstr string) (b *Bitmask, err error) {
+
+	if len(bitstr) == 0 {
+		return nil, errors.New("newfromstr: bit string cannot be empty")
+	}
+
 	b = new(Bitmask)
 	b.size = len(bitstr)
 
