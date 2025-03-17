@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
+	"math/bits"
 	"strconv"
-	"strings"
 )
 
 // Bit - new type for bitmask
@@ -24,7 +23,7 @@ func New(size int) (b *Bitmask) {
 
 	b = new(Bitmask)
 	b.size = size
-	b.largest = Bit(math.Exp2(float64(size)))
+	b.largest = Bit(1) << uint(size)
 	//b.bv = 1 << (size - 1)
 
 	return
@@ -45,28 +44,27 @@ func NewFromStr(bitstr string) (b *Bitmask, err error) {
 		return nil, fmt.Errorf("newfromstr: error parsing bit string -> %w", err)
 	}
 
-	b.largest = 1 << b.size
+	b.largest = Bit(1) << b.size
 	b.bv = Bit(bitvalue)
 	return
 }
 
 // SetLength - sets the length of the bit string
-func (b *Bitmask) SetLength(len int) {
-	b.largest = 1 << len
-	b.size = len
+func (b *Bitmask) SetLength(newSize int) {
+	b.largest = Bit(1) << uint(newSize)
+	b.size = newSize
 }
 
 // Set - sets the given bits to 1, expanding size as needed for string padding and clearing
-func (b *Bitmask) Set(bits ...Bit) {
+func (b *Bitmask) Set(bitsToSet ...Bit) {
 
-	for _, bit := range bits {
+	for _, bit := range bitsToSet {
 		b.bv |= bit
 
 		if bit >= b.largest {
 			// the size can't accomodate the new largest bit, expand it
-			b.largest = bit
-			v := int(math.Log2(float64(bit)))
-			b.size = v + 1
+			b.size = bits.Len64(uint64(bit))
+			b.largest = Bit(1) << uint(b.size)
 		}
 
 	}
@@ -75,28 +73,19 @@ func (b *Bitmask) Set(bits ...Bit) {
 
 // SetAll - sets all the bits to 1
 func (b *Bitmask) SetAll() {
-
-	var t uint64
-
-	for i := 0; i < b.size; i++ {
-		t += uint64(math.Exp2(float64(i)))
-	}
-
-	b.bv |= Bit(t)
-
+	b.bv |= Bit((1 << uint(b.size)) - 1)
 }
 
 // Remove - sets the given bits to 0
 func (b *Bitmask) Remove(bits ...Bit) {
 	for _, bit := range bits {
-		// //b.bv &= ^bit
 		b.bv &^= bit
 	}
 }
 
 // Clear - clears all the bits to 0, essentially a blank instance
 func (b *Bitmask) Clear() {
-	b.bv = b.bv >> Bit(63) // max is 64 bits, so we just shift it, there is no real benefit for shifting by the size
+	b.bv = 0
 }
 
 // Toggle - flip the given bits
@@ -127,18 +116,20 @@ func (b Bitmask) MarshalJSON() ([]byte, error) {
 	return json.Marshal(b.String())
 }
 
-// UnmarshalJSON - returnsa unmarshaled JSON of the bitmask
+// UnmarshalJSON - returns an unmarshaled JSON of the bitmask
 func (b *Bitmask) UnmarshalJSON(bitbytes []byte) (err error) {
 
-	bitstr := string(bitbytes)
-	bitstr = strings.ReplaceAll(bitstr, "\"", "") // strip the quotes (") before using
+	unquoted, err := strconv.Unquote(string(bitbytes))
+	if err != nil {
+		return fmt.Errorf("unmarshaljson: error unquoting bit string -> %w", err)
+	}
 
-	b1, err := NewFromStr(bitstr)
+	temp, err := NewFromStr(unquoted)
 	if nil != err {
 		return fmt.Errorf("unmarshaljson: error decoding bit string -> %w", err)
 	}
 
-	*b = *b1 // assign the temp variable to the real bitmask
+	*b = *temp // assign the temp variable to the real bitmask
 
 	return
 }
